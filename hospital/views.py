@@ -1,5 +1,3 @@
-# hospital/views.py
-
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -28,7 +26,7 @@ from .permissions import (
 from .pagination import StandardResultsSetPagination, LargeResultsSetPagination
 
 
-# Authentication Views
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
@@ -126,7 +124,7 @@ def get_current_user(request):
     return Response(serializer.data)
 
 
-# User ViewSet
+
 class UserViewSet(viewsets.ModelViewSet):
     """
     ViewSet for User model.
@@ -143,7 +141,7 @@ class UserViewSet(viewsets.ModelViewSet):
     ordering = ['-date_joined']
 
 
-# Department ViewSet
+
 class DepartmentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Department model.
@@ -186,8 +184,6 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         serializer = DepartmentSummarySerializer(departments, many=True)
         return Response(serializer.data)
 
-
-# Doctor ViewSet
 class DoctorViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Doctor model.
@@ -222,7 +218,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         doctor = self.get_object()
         appointments = doctor.appointments.all()
         
-        # Filter by date if provided
+
         date = request.query_params.get('date', None)
         if date:
             appointments = appointments.filter(appointment_date=date)
@@ -257,7 +253,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-# Patient ViewSet
+
 class PatientViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Patient model.
@@ -327,7 +323,6 @@ class PatientViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-# Appointment ViewSet
 class AppointmentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Appointment model.
@@ -396,7 +391,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-# MedicalRecord ViewSet
 class MedicalRecordViewSet(viewsets.ModelViewSet):
     """
     ViewSet for MedicalRecord model.
@@ -422,14 +416,12 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
         return MedicalRecord.objects.none()
     
     def perform_create(self, serializer):
-        # Automatically set doctor to current user if they're a doctor
         if self.request.user.role == 'doctor' and hasattr(self.request.user, 'doctor_profile'):
             serializer.save(doctor=self.request.user.doctor_profile)
         else:
             serializer.save()
 
 
-# Prescription ViewSet
 class PrescriptionViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Prescription model.
@@ -458,7 +450,6 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-# Billing ViewSet
 class BillingViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Billing model.
@@ -506,7 +497,7 @@ class BillingViewSet(viewsets.ModelViewSet):
                 'error': 'Invalid amount'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Update payment
+        
         from decimal import Decimal
         from django.utils import timezone
         
@@ -542,7 +533,7 @@ class BillingViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-# Dashboard/Statistics View
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsDoctorOrAdmin])
 def dashboard_stats(request):
