@@ -1,15 +1,9 @@
-# hospital/models.py
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 
 class User(AbstractUser):
-    """
-    Custom User model extending Django's AbstractUser.
-    Supports multiple user roles in the hospital system.
-    """
     ROLE_CHOICES = (
         ('admin', 'Administrator'),
         ('doctor', 'Doctor'),
@@ -33,9 +27,6 @@ class User(AbstractUser):
 
 
 class Department(models.Model):
-    """
-    Hospital departments like Cardiology, Neurology, etc.
-    """
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     head_of_department = models.ForeignKey(
@@ -61,9 +52,6 @@ class Department(models.Model):
 
 
 class Doctor(models.Model):
-    """
-    Doctor profile with specialization and availability.
-    """
     SPECIALIZATION_CHOICES = (
         ('cardiology', 'Cardiology'),
         ('neurology', 'Neurology'),
@@ -95,9 +83,6 @@ class Doctor(models.Model):
 
 
 class Patient(models.Model):
-    """
-    Patient profile with medical history.
-    """
     BLOOD_GROUP_CHOICES = (
         ('A+', 'A Positive'),
         ('A-', 'A Negative'),
@@ -129,9 +114,6 @@ class Patient(models.Model):
 
 
 class Appointment(models.Model):
-    """
-    Appointments between patients and doctors.
-    """
     STATUS_CHOICES = (
         ('scheduled', 'Scheduled'),
         ('confirmed', 'Confirmed'),
@@ -162,9 +144,6 @@ class Appointment(models.Model):
 
 
 class MedicalRecord(models.Model):
-    """
-    Medical records and visit history.
-    """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_records')
     doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, related_name='medical_records')
     appointment = models.OneToOneField(Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name='medical_record')
@@ -186,9 +165,6 @@ class MedicalRecord(models.Model):
 
 
 class Prescription(models.Model):
-    """
-    Prescriptions issued by doctors.
-    """
     medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE, related_name='prescriptions')
     medication_name = models.CharField(max_length=200)
     dosage = models.CharField(max_length=100)
@@ -208,9 +184,6 @@ class Prescription(models.Model):
 
 
 class Billing(models.Model):
-    """
-    Billing and payment tracking.
-    """
     PAYMENT_STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('partial', 'Partially Paid'),
