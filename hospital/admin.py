@@ -1,5 +1,3 @@
-# hospital/admin.py
-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import (
@@ -10,9 +8,6 @@ from .models import (
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    """
-    Admin interface for custom User model.
-    """
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_active', 'date_joined')
     list_filter = ('role', 'is_active', 'is_staff', 'date_joined')
     search_fields = ('username', 'email', 'first_name', 'last_name')
@@ -33,9 +28,6 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    """
-    Admin interface for Department model.
-    """
     list_display = ('name', 'head_of_department', 'floor_number', 'is_active', 'created_at')
     list_filter = ('is_active', 'floor_number', 'created_at')
     search_fields = ('name', 'description')
@@ -57,9 +49,6 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Doctor)
 class DoctorAdmin(admin.ModelAdmin):
-    """
-    Admin interface for Doctor model.
-    """
     list_display = ('get_full_name', 'specialization', 'department', 'license_number', 
                     'years_of_experience', 'consultation_fee', 'is_available')
     list_filter = ('specialization', 'department', 'is_available', 'created_at')
@@ -88,9 +77,6 @@ class DoctorAdmin(admin.ModelAdmin):
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    """
-    Admin interface for Patient model.
-    """
     list_display = ('get_full_name', 'blood_group', 'emergency_contact_name', 
                     'emergency_contact_phone', 'created_at')
     list_filter = ('blood_group', 'created_at')
@@ -122,9 +108,6 @@ class PatientAdmin(admin.ModelAdmin):
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    """
-    Admin interface for Appointment model.
-    """
     list_display = ('get_patient_name', 'get_doctor_name', 'appointment_date', 
                     'appointment_time', 'status', 'created_at')
     list_filter = ('status', 'appointment_date', 'doctor', 'created_at')
@@ -157,9 +140,6 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 
 class PrescriptionInline(admin.TabularInline):
-    """
-    Inline admin for Prescription in MedicalRecord.
-    """
     model = Prescription
     extra = 1
     fields = ('medication_name', 'dosage', 'frequency', 'duration_days', 'is_active')
@@ -202,9 +182,6 @@ class MedicalRecordAdmin(admin.ModelAdmin):
 
 @admin.register(Prescription)
 class PrescriptionAdmin(admin.ModelAdmin):
-    """
-    Admin interface for Prescription model.
-    """
     list_display = ('medication_name', 'get_patient_name', 'dosage', 'frequency', 
                     'duration_days', 'is_active', 'created_at')
     list_filter = ('is_active', 'created_at')
