@@ -1,6 +1,3 @@
-# Render Blueprint for Hospital Management API
-# Deploy to Render: https://render.com
-
 services:
   # PostgreSQL Database
   - type: pserv
