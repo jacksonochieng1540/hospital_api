@@ -1,0 +1,60 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: hospital_db
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    environment:
+      POSTGRES_DB: ${DB_NAME:-hospital_db}
+      POSTGRES_USER: ${DB_USER:-hospital_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme123}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5433:5432"
+    networks:
+      - hospital_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hospital_user} -d ${DB_NAME:-hospital_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s  # Increased for PostgreSQL initialization
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: hospital_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    networks:
+      - hospital_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  static_volume:
+    driver: local
+  media_volume:
+    driver: local
+
+networks:
+  hospital_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
