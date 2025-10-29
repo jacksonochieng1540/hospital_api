@@ -1,5 +1,3 @@
-# hospital/tests.py
-
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
@@ -15,17 +13,12 @@ from .models import (
 
 
 class UserAuthenticationTests(APITestCase):
-    """
-    Test cases for user authentication endpoints.
-    """
-    
     def setUp(self):
         self.register_url = reverse('register')
         self.login_url = reverse('login')
         self.logout_url = reverse('logout')
         
     def test_user_registration(self):
-        """Test user can register successfully"""
         data = {
             'username': 'testuser',
             'email': 'test@example.com',
@@ -41,7 +34,6 @@ class UserAuthenticationTests(APITestCase):
         self.assertEqual(User.objects.count(), 1)
     
     def test_user_login(self):
-        """Test user can login and receive token"""
         user = User.objects.create_user(
             username='testuser',
             password='TestPass123!',
@@ -56,7 +48,6 @@ class UserAuthenticationTests(APITestCase):
         self.assertIn('token', response.data)
     
     def test_user_logout(self):
-        """Test user can logout and token is deleted"""
         user = User.objects.create_user(username='testuser', password='test123')
         token = Token.objects.create(user=user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
@@ -67,10 +58,6 @@ class UserAuthenticationTests(APITestCase):
 
 
 class DepartmentTests(APITestCase):
-    """
-    Test cases for Department CRUD operations.
-    """
-    
     def setUp(self):
         self.admin_user = User.objects.create_user(
             username='admin',
@@ -81,7 +68,6 @@ class DepartmentTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
         
     def test_create_department(self):
-        """Test admin can create department"""
         url = reverse('department-list')
         data = {
             'name': 'Cardiology',
@@ -93,7 +79,6 @@ class DepartmentTests(APITestCase):
         self.assertEqual(Department.objects.count(), 1)
     
     def test_list_departments(self):
-        """Test listing departments with pagination"""
         Department.objects.create(name='Cardiology', floor_number=3)
         Department.objects.create(name='Neurology', floor_number=4)
         
@@ -103,7 +88,6 @@ class DepartmentTests(APITestCase):
         self.assertEqual(len(response.data['results']), 2)
     
     def test_filter_departments(self):
-        """Test filtering departments by is_active"""
         Department.objects.create(name='Active Dept', floor_number=1, is_active=True)
         Department.objects.create(name='Inactive Dept', floor_number=2, is_active=False)
         
@@ -113,10 +97,6 @@ class DepartmentTests(APITestCase):
 
 
 class DoctorTests(APITestCase):
-    """
-    Test cases for Doctor CRUD operations.
-    """
-    
     def setUp(self):
         self.admin_user = User.objects.create_user(
             username='admin',
@@ -138,7 +118,6 @@ class DoctorTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
     
     def test_create_doctor_profile(self):
-        """Test creating doctor profile"""
         url = reverse('doctor-list')
         data = {
             'user_id': self.doctor_user.id,
@@ -154,7 +133,6 @@ class DoctorTests(APITestCase):
         self.assertEqual(Doctor.objects.count(), 1)
     
     def test_get_available_doctors(self):
-        """Test getting only available doctors"""
         Doctor.objects.create(
             user=self.doctor_user,
             department=self.department,
@@ -172,13 +150,8 @@ class DoctorTests(APITestCase):
         self.assertEqual(len(response.data['results']), 1)
 
 
-class AppointmentTests(APITestCase):
-    """
-    Test cases for Appointment operations.
-    """
-    
+class AppointmentTests(APITestCase): 
     def setUp(self):
-        # Create users
         self.patient_user = User.objects.create_user(
             username='patient1',
             password='patient123',
@@ -190,13 +163,12 @@ class AppointmentTests(APITestCase):
             role='doctor'
         )
         
-        # Create department
+        
         self.department = Department.objects.create(
             name='Cardiology',
             floor_number=3
         )
-        
-        # Create doctor profile
+     
         self.doctor = Doctor.objects.create(
             user=self.doctor_user,
             department=self.department,
@@ -207,7 +179,7 @@ class AppointmentTests(APITestCase):
             qualification='MD'
         )
         
-        # Create patient profile
+     
         self.patient = Patient.objects.create(
             user=self.patient_user,
             blood_group='A+',
@@ -219,7 +191,6 @@ class AppointmentTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
     
     def test_create_appointment(self):
-        """Test patient can create appointment"""
         url = reverse('appointment-list')
         tomorrow = date.today() + timedelta(days=1)
         data = {
@@ -235,10 +206,8 @@ class AppointmentTests(APITestCase):
         self.assertEqual(Appointment.objects.count(), 1)
     
     def test_conflicting_appointment(self):
-        """Test cannot create conflicting appointments"""
         tomorrow = date.today() + timedelta(days=1)
         
-        # Create first appointment
         Appointment.objects.create(
             patient=self.patient,
             doctor=self.doctor,
@@ -248,7 +217,7 @@ class AppointmentTests(APITestCase):
             duration_minutes=30
         )
         
-        # Try to create conflicting appointment
+        
         url = reverse('appointment-list')
         data = {
             'patient': self.patient.id,
@@ -262,7 +231,7 @@ class AppointmentTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_get_upcoming_appointments(self):
-        """Test getting upcoming appointments"""
+      
         tomorrow = date.today() + timedelta(days=1)
         Appointment.objects.create(
             patient=self.patient,
@@ -280,27 +249,23 @@ class AppointmentTests(APITestCase):
         self.assertEqual(len(response.data['results']), 1)
 
 
-class MedicalRecordTests(APITestCase):
-    """
-    Test cases for Medical Record operations.
-    """
-    
+class MedicalRecordTests(APITestCase): 
     def setUp(self):
-        # Create doctor user
+        
         self.doctor_user = User.objects.create_user(
             username='doctor1',
             password='doctor123',
             role='doctor'
         )
         
-        # Create patient user
+      
         self.patient_user = User.objects.create_user(
             username='patient1',
             password='patient123',
             role='patient'
         )
         
-        # Create department and doctor profile
+        
         department = Department.objects.create(name='Cardiology', floor_number=3)
         self.doctor = Doctor.objects.create(
             user=self.doctor_user,
@@ -312,7 +277,7 @@ class MedicalRecordTests(APITestCase):
             qualification='MD'
         )
         
-        # Create patient profile
+     
         self.patient = Patient.objects.create(
             user=self.patient_user,
             blood_group='A+',
@@ -324,7 +289,6 @@ class MedicalRecordTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
     
     def test_create_medical_record(self):
-        """Test doctor can create medical record"""
         url = reverse('medical-record-list')
         data = {
             'patient': self.patient.id,
@@ -340,13 +304,12 @@ class MedicalRecordTests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(MedicalRecord.objects.count(), 1)
-        # Check doctor is automatically set
+      
         record = MedicalRecord.objects.first()
         self.assertEqual(record.doctor, self.doctor)
     
     def test_patient_can_view_own_records(self):
-        """Test patient can view their own medical records"""
-        # Create medical record
+       
         MedicalRecord.objects.create(
             patient=self.patient,
             doctor=self.doctor,
@@ -356,7 +319,7 @@ class MedicalRecordTests(APITestCase):
             vital_signs={}
         )
         
-        # Login as patient
+       
         patient_token = Token.objects.create(user=self.patient_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {patient_token.key}')
         
@@ -367,19 +330,14 @@ class MedicalRecordTests(APITestCase):
 
 
 class BillingTests(APITestCase):
-    """
-    Test cases for Billing operations.
-    """
-    
     def setUp(self):
-        # Create admin user
+       
         self.admin_user = User.objects.create_user(
             username='admin',
             password='admin123',
             role='admin'
         )
-        
-        # Create patient
+       
         patient_user = User.objects.create_user(
             username='patient1',
             password='patient123',
@@ -396,7 +354,6 @@ class BillingTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
     
     def test_create_billing(self):
-        """Test creating billing record"""
         url = reverse('billing-list')
         data = {
             'patient': self.patient.id,
@@ -409,7 +366,6 @@ class BillingTests(APITestCase):
         self.assertEqual(Billing.objects.count(), 1)
     
     def test_record_payment(self):
-        """Test recording payment for billing"""
         billing = Billing.objects.create(
             patient=self.patient,
             invoice_number='INV-001',
@@ -430,7 +386,6 @@ class BillingTests(APITestCase):
         self.assertEqual(billing.payment_status, 'partial')
     
     def test_full_payment_updates_status(self):
-        """Test full payment updates status to paid"""
         billing = Billing.objects.create(
             patient=self.patient,
             invoice_number='INV-001',
@@ -451,12 +406,8 @@ class BillingTests(APITestCase):
 
 
 class PermissionTests(APITestCase):
-    """
-    Test cases for permission system.
-    """
-    
     def setUp(self):
-        # Create users with different roles
+       
         self.patient_user = User.objects.create_user(
             username='patient1',
             password='patient123',
@@ -474,7 +425,6 @@ class PermissionTests(APITestCase):
         )
     
     def test_patient_cannot_create_department(self):
-        """Test patient cannot create department"""
         token = Token.objects.create(user=self.patient_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
         
@@ -484,7 +434,6 @@ class PermissionTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_admin_can_create_department(self):
-        """Test admin can create department"""
         token = Token.objects.create(user=self.admin_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token.key}')
         
@@ -494,17 +443,12 @@ class PermissionTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
     
     def test_unauthenticated_user_cannot_access_api(self):
-        """Test unauthenticated users cannot access protected endpoints"""
         url = reverse('department-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class PaginationTests(APITestCase):
-    """
-    Test cases for pagination.
-    """
-    
     def setUp(self):
         self.admin_user = User.objects.create_user(
             username='admin',
@@ -514,7 +458,7 @@ class PaginationTests(APITestCase):
         self.token = Token.objects.create(user=self.admin_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
         
-        # Create 15 departments
+       
         for i in range(15):
             Department.objects.create(
                 name=f'Department {i}',
@@ -522,7 +466,6 @@ class PaginationTests(APITestCase):
             )
     
     def test_default_pagination(self):
-        """Test default pagination returns 10 items"""
         url = reverse('department-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -531,23 +474,21 @@ class PaginationTests(APITestCase):
         self.assertEqual(response.data['total_pages'], 2)
     
     def test_custom_page_size(self):
-        """Test custom page size parameter"""
         url = reverse('department-list')
         response = self.client.get(url, {'page_size': 5})
         self.assertEqual(len(response.data['results']), 5)
         self.assertEqual(response.data['total_pages'], 3)
     
     def test_page_navigation(self):
-        """Test navigating between pages"""
         url = reverse('department-list')
         
-        # Get first page
+      
         response = self.client.get(url, {'page': 1, 'page_size': 10})
         self.assertEqual(len(response.data['results']), 10)
         self.assertIsNotNone(response.data['next'])
         self.assertIsNone(response.data['previous'])
         
-        # Get second page
+        
         response = self.client.get(url, {'page': 2, 'page_size': 10})
         self.assertEqual(len(response.data['results']), 5)
         self.assertIsNone(response.data['next'])
@@ -555,10 +496,6 @@ class PaginationTests(APITestCase):
 
 
 class FilteringTests(APITestCase):
-    """
-    Test cases for filtering functionality.
-    """
-    
     def setUp(self):
         self.admin_user = User.objects.create_user(
             username='admin',
@@ -568,7 +505,7 @@ class FilteringTests(APITestCase):
         self.token = Token.objects.create(user=self.admin_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
         
-        # Create departments
+        
         self.cardiology = Department.objects.create(
             name='Cardiology',
             floor_number=3,
@@ -580,7 +517,7 @@ class FilteringTests(APITestCase):
             is_active=False
         )
         
-        # Create doctors
+     
         doctor_user = User.objects.create_user(
             username='doctor1',
             password='doc123',
@@ -600,40 +537,34 @@ class FilteringTests(APITestCase):
         )
     
     def test_filter_departments_by_active_status(self):
-        """Test filtering departments by is_active"""
         url = reverse('department-list')
         response = self.client.get(url, {'is_active': 'true'})
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['name'], 'Cardiology')
     
     def test_search_departments(self):
-        """Test searching departments by name"""
         url = reverse('department-list')
         response = self.client.get(url, {'search': 'Cardio'})
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['name'], 'Cardiology')
     
     def test_filter_doctors_by_specialization(self):
-        """Test filtering doctors by specialization"""
         url = reverse('doctor-list')
         response = self.client.get(url, {'specialization': 'cardiology'})
         self.assertEqual(len(response.data['results']), 1)
     
     def test_search_doctors_by_name(self):
-        """Test searching doctors by name"""
         url = reverse('doctor-list')
         response = self.client.get(url, {'search': 'John'})
         self.assertEqual(len(response.data['results']), 1)
     
     def test_ordering_departments(self):
-        """Test ordering departments"""
         url = reverse('department-list')
         response = self.client.get(url, {'ordering': 'name'})
         results = response.data['results']
         self.assertEqual(results[0]['name'], 'Cardiology')
         self.assertEqual(results[1]['name'], 'Neurology')
         
-        # Test reverse ordering
         response = self.client.get(url, {'ordering': '-name'})
         results = response.data['results']
         self.assertEqual(results[0]['name'], 'Neurology')
