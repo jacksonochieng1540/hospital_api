@@ -1,5 +1,3 @@
-# hospital/serializers.py
-
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
@@ -10,9 +8,6 @@ from .models import (
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """
-    Serializer for user registration with password validation.
-    """
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True, label="Confirm Password")
     
@@ -38,9 +33,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """
-    Serializer for User model with read-only fields.
-    """
     full_name = serializers.SerializerMethodField()
     
     class Meta:
@@ -55,9 +47,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    """
-    Serializer for user authentication.
-    """
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
     
@@ -79,9 +68,6 @@ class LoginSerializer(serializers.Serializer):
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Department model with nested head of department info.
-    """
     head_of_department_name = serializers.SerializerMethodField()
     doctor_count = serializers.SerializerMethodField()
     
@@ -100,9 +86,6 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 
 class DoctorSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Doctor model with user details.
-    """
     user_details = UserSerializer(source='user', read_only=True)
     department_name = serializers.CharField(source='department.name', read_only=True)
     
@@ -113,9 +96,6 @@ class DoctorSerializer(serializers.ModelSerializer):
 
 
 class DoctorCreateSerializer(serializers.ModelSerializer):
-    """
-    Separate serializer for creating doctors with user creation.
-    """
     user_id = serializers.IntegerField(write_only=True)
     
     class Meta:
@@ -142,9 +122,6 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
 
 
 class PatientSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Patient model with user details.
-    """
     user_details = UserSerializer(source='user', read_only=True)
     appointment_count = serializers.SerializerMethodField()
     
@@ -158,9 +135,6 @@ class PatientSerializer(serializers.ModelSerializer):
 
 
 class PatientCreateSerializer(serializers.ModelSerializer):
-    """
-    Separate serializer for creating patients.
-    """
     user_id = serializers.IntegerField(write_only=True)
     
     class Meta:
@@ -188,9 +162,6 @@ class PatientCreateSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Appointment model with nested details.
-    """
     patient_name = serializers.CharField(source='patient.user.get_full_name', read_only=True)
     doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
     doctor_specialization = serializers.CharField(source='doctor.specialization', read_only=True)
@@ -201,13 +172,11 @@ class AppointmentSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_at', 'updated_at')
     
     def validate(self, attrs):
-        # Check for conflicting appointments
         doctor = attrs.get('doctor')
         appointment_date = attrs.get('appointment_date')
         appointment_time = attrs.get('appointment_time')
         
         if doctor and appointment_date and appointment_time:
-            # Exclude current instance if updating
             existing = Appointment.objects.filter(
                 doctor=doctor,
                 appointment_date=appointment_date,
@@ -226,9 +195,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
 
 class PrescriptionSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Prescription model.
-    """
     patient_name = serializers.CharField(source='medical_record.patient.user.get_full_name', read_only=True)
     
     class Meta:
@@ -238,9 +204,6 @@ class PrescriptionSerializer(serializers.ModelSerializer):
 
 
 class MedicalRecordSerializer(serializers.ModelSerializer):
-    """
-    Serializer for MedicalRecord with nested prescriptions.
-    """
     patient_name = serializers.CharField(source='patient.user.get_full_name', read_only=True)
     doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
     prescriptions = PrescriptionSerializer(many=True, read_only=True)
@@ -252,9 +215,6 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
 
 
 class BillingSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Billing model with calculated fields.
-    """
     patient_name = serializers.CharField(source='patient.user.get_full_name', read_only=True)
     balance = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     
@@ -279,9 +239,6 @@ class BillingSerializer(serializers.ModelSerializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-    """
-    Serializer for password change endpoint.
-    """
     old_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
     new_password2 = serializers.CharField(required=True, write_only=True, label="Confirm New Password")
@@ -298,9 +255,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
 
-# Summary serializers for dashboard/statistics
+
 class DepartmentSummarySerializer(serializers.ModelSerializer):
-    """Lightweight serializer for department listings"""
     doctor_count = serializers.IntegerField(read_only=True)
     
     class Meta:
@@ -309,7 +265,6 @@ class DepartmentSummarySerializer(serializers.ModelSerializer):
 
 
 class DoctorSummarySerializer(serializers.ModelSerializer):
-    """Lightweight serializer for doctor listings"""
     name = serializers.CharField(source='user.get_full_name', read_only=True)
     
     class Meta:
