@@ -1,0 +1,97 @@
+# Render Blueprint for Hospital Management API
+# Deploy to Render: https://render.com
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: hospital-db
+    env: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile.postgres
+    disk:
+      name: hospital-db-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
+    envVars:
+      - key: POSTGRES_DB
+        value: hospital_db
+      - key: POSTGRES_USER
+        value: hospital_user
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+    healthCheckPath: /
+
+  # Redis Cache
+  - type: redis
+    name: hospital-redis
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  # Django Web Service
+  - type: web
+    name: hospital-api
+    env: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    branch: main
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: |
+      python manage.py migrate --noinput &&
+      python manage.py collectstatic --noinput &&
+      gunicorn hospital_project.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+    healthCheckPath: /api/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: hospital-api.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hospital-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: hospital-redis
+          type: redis
+          property: connectionString
+      - key: DB_ENGINE
+        value: django.db.backends.postgresql
+      - key: DJANGO_SETTINGS_MODULE
+        value: hospital_project.settings
+      - key: PORT
+        value: 10000
+      - key: GUNICORN_WORKERS
+        value: 4
+      - key: GUNICORN_THREADS
+        value: 2
+      - key: GUNICORN_TIMEOUT
+        value: 120
+      - key: WEB_CONCURRENCY
+        value: 4
+    autoDeploy: true
+    disk:
+      name: hospital-media
+      mountPath: /app/media
+      sizeGB: 5
+    initialDeployHook: |
+      python manage.py migrate --noinput
+      python manage.py collectstatic --noinput
+      echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@hospital.com', 'admin123')" | python manage.py shell
+
+# Environment Groups (optional)
+# databases:
+#   - name: hospital-db
+#     databaseName: hospital_db
+#     user: hospital_user
+#     region: oregon
+#     plan: starter
