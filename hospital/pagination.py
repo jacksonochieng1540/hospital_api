@@ -1,14 +1,8 @@
-# hospital/pagination.py
-
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 
 class StandardResultsSetPagination(PageNumberPagination):
-    """
-    Standard pagination class with 10 items per page.
-    Can be customized by client using page_size parameter.
-    """
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
@@ -27,9 +21,6 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class LargeResultsSetPagination(PageNumberPagination):
-    """
-    Pagination class for larger datasets with 50 items per page.
-    """
     page_size = 50
     page_size_query_param = 'page_size'
     max_page_size = 200
@@ -48,10 +39,6 @@ class LargeResultsSetPagination(PageNumberPagination):
 
 
 class SmallResultsSetPagination(PageNumberPagination):
-    """
-    Pagination class for smaller datasets with 5 items per page.
-    Useful for mobile or compact views.
-    """
     page_size = 5
     page_size_query_param = 'page_size'
     max_page_size = 20
