@@ -1,11 +1,10 @@
 asgiref==3.10.0
 Django==5.0.7
-django-cors-headers==4.9.0
-django-filter==25.2
+django-cors-headers>=4.9.0
+django-filter>=25.2
 django-ratelimit==4.1.0
-django-restframework==0.0.1
-django-sslserver==0.22
 djangorestframework==3.16.1
+django-sslserver==0.22
 drf-yasg==1.21.11
 factory_boy==3.3.3
 Faker==37.12.0
