@@ -41,6 +41,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
+    - name: Install PostgreSQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+    
     - name: Wait for PostgreSQL
       run: |
         until pg_isready -h localhost -p 5432; do
@@ -48,10 +53,18 @@ jobs:
           sleep 2
         done
     
+    - name: Run Migrations
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        DJANGO_SECRET_KEY: ${{ secrets.SECRET_KEY || 'django-insecure-test-key-for-ci-12345' }}
+        DEBUG: False
+      run: |
+        python manage.py migrate
+    
     - name: Run Tests
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        DJANGO_SECRET_KEY: ${{ secrets.SECRET_KEY || 'django-insecure-test-key-for-ci-12345' }}
         DEBUG: False
-        SECRET_KEY: ${{ secrets.SECRET_KEY || 'django-insecure-test-key-for-ci-12345' }}
       run: |
         python manage.py test
