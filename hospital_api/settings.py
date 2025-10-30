@@ -186,9 +186,11 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD', default=''),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
+        'TEST': {
+            'NAME': 'test_hospital_db',  
+        },
     }
 }
-
 #Security Settings for Production
 
 
