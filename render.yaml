@@ -1,5 +1,5 @@
 services:
-  # PostgreSQL Database
+  
   - type: pserv
     name: hospital-db
     env: docker
