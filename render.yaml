@@ -19,7 +19,7 @@ services:
         generateValue: true
     healthCheckPath: /
 
-  # Redis Cache                                
+                               
   - type: redis
     name: hospital-redis
     plan: starter
@@ -27,7 +27,7 @@ services:
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
 
-  # Django Web Service
+  
   - type: web
     name: hospital-api
     env: docker
@@ -85,10 +85,4 @@ services:
       python manage.py collectstatic --noinput
       echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@hospital.com', 'admin123')" | python manage.py shell
 
-# Environment Groups (optional)
-# databases:
-#   - name: hospital-db
-#     databaseName: hospital_db
-#     user: hospital_user
-#     region: oregon
-#     plan: starter
+
