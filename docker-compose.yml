@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  # PostgreSQL Database
+
   db:
     image: postgres:15-alpine
     container_name: hospital_db
@@ -23,9 +23,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s  # Increased for PostgreSQL initialization
+      start_period: 30s  
 
-  # Redis Cache
+  
   redis:
     image: redis:7-alpine
     container_name: hospital_redis
