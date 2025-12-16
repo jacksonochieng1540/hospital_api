@@ -16,7 +16,6 @@ inflection==0.5.1
 iniconfig==2.3.0
 packaging==25.0
 pillow==12.0.0
-pluggy==1.6.0
 psycopg2-binary==2.9.11
 Pygments==2.19.2
 pytest==8.4.2
